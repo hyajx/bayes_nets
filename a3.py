@@ -3,24 +3,15 @@
 class VariableElimination:
     @staticmethod
     def inference(factorList, queryVariables, orderedListOfHiddenVariables, evidenceList):
-        # VariableElimination.printFactors(factorList)
-        # print("eliminating")
-        remove_list = []
         for ev in evidenceList:
             remove_list = []
-            # print("--------restricting " + ev);
             for factor in factorList:
-                # print(str(factor.varList));
                 if ev in factor.varList:
-                    # print("restricting " + ev + " on " + factor.name)
                     newFactor = factor.restrict(ev, evidenceList[ev])
-                    # newFactor.print()
                     remove_list.append(factor)
                     if len(newFactor.varList) > 0:
                         factorList.append(newFactor)
             factorList = [factor for factor in factorList if factor not in remove_list]
-
-        # VariableElimination.printFactors(factorList)
 
         for var in orderedListOfHiddenVariables:
             targets = [factor for factor in factorList if var in factor.varList]
@@ -31,26 +22,13 @@ class VariableElimination:
             remove_list = [targets[0]]
             for i in range(1, len(targets)):
                 target = targets[i]
-                # print(" Joining " + str(res.varList) + " & " + str(target.varList) + " for var " + var)
-                # res.print()
-                # target.print()
                 res = res.multiply(target)
-                # print("res " + str(res.varList))
-                # res.print()
-                # res.print()
                 remove_list.append(target)
-
-            #print(var)
-            #print(str(res.varList))
 
             res = res.sumout(var)
             factorList = [factor for factor in factorList if factor not in remove_list]
             if res is not None:
                 factorList.append(res)
-                #res.print()
-            # VariableElimination.printFactors(factorList):
-
-        # VariableElimination.printFactors(factorList)
 
         print("RESULT:")
         res = factorList[0]
@@ -61,9 +39,6 @@ class VariableElimination:
         total = sum(res.cpt.values())
         res.cpt = {k: v/total for k, v in res.cpt.items()}
         res.print()
-
-
-
 
     @staticmethod
     def printFactors(factorList):
@@ -99,8 +74,6 @@ class Node:
         common = [var for var in factor.varList if var in self.varList]
         common_in_1 = [self.varList.index(var) for var in self.varList if var in common]
         common_in_2 = [factor.varList.index(var) for var in factor.varList if var in common]
-        #if (len(common_in_1) == len(self.varList)): return factor
-        #if (len(common_in_2) == len(factor.varList)): return self
         key_len_1 = len(self.varList)
         key_len_2 = len(factor.varList)
         new_cpt = {}
@@ -134,18 +107,12 @@ class Node:
         if len(self.varList) == 1:
             return None
         index = self.varList.index(variable)
-        # self.print()
-        # print("summing out " + str(self.varList) + " on " + variable + " at " + str(index))
         new_cpt = {}
         new_var_list = self.varList
-        del new_var_list[index]    #.remove(index) # [:index] + self.varList[index + 1:]
-        #print(new_var_list)
+        del new_var_list[index]
         new_size = 2 ** len(new_var_list)
         for i in range(new_size):
             new_key = str(Util.to_binary(i, len(new_var_list)))
-            #print(self.cpt)
-            #print(new_key)
-            #print(new_key[:index] + '0' + new_key[index:])
             val1 = self.cpt[new_key[:index] + '0' + new_key[index:]]
             val2 = self.cpt[new_key[:index] + '1' + new_key[index:]]
             new_cpt[new_key] = val1 + val2
@@ -186,28 +153,7 @@ NDG.setCpt({'111': 0.8, '011': 1-0.8, '110': 0.4, '010': 0.6, '101': 0.5, '001':
 FH.setCpt({'1111': 0.99, '0111': 0.01, '1011': 0.9, '0011': 0.1, '1101': 0.65, '0101': 0.35, '1110': 0.75, '0110': 0.25,
            '1010': 0.5, '0010': 0.5, '1100': 0.2, '0100': 0.8, '1001': 0.4, '0001': 0.6, '1000': 0, '0000': 1})
 
-#
-# FM.print()
-# NA.print()
-# FS.print()
-# FB.print()
-# NDG.print()
-# FH.print()
 
-# FH.print()
-# F1 = FH.restrict("FS", 1)
-# F1.print()
-
-# FH.print()
-# F1 = FH.sumout("FS")
-# F1.print()
-
-# FM.print()
-# NA.print()
-# F1 = FM.multiply(NA)
-# F1.print()
-
-# ('FH', True), ('FM', True), ('FB', True)]
 print("Q2 **********************")
 VariableElimination.inference([FH, NA, FS, FM, NDG], ['FH'], ['NA', 'NDG', 'FM', 'FS'], {})
 
@@ -220,6 +166,3 @@ VariableElimination.inference([FH, FM, NA, FS, NDG, FB], ['FS'], ['NDG'],
 
 print("Q3 **********************")
 VariableElimination.inference([FH, FM, NA, FS, NDG, FB], ['FS'], ['NA', 'NDG', 'FB'], {'FH': 1, 'FM': 1})
-# VariableElimination.inference([NA, FB, FH], ['FH'], ['NA', 'FB'], {'FS': 1, 'FM': 1, 'NDG': 1})
-# VariableElimination.inference([NDG, FM, NA], ['NDG'], ['NA', 'FM'], {})
-# VariableElimination.inference([NDG, FM, NA], ['NDG'], ['FS', 'FB', 'FH'], {'NA': 1, 'FM': 1})
